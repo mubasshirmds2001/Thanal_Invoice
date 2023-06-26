@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".InvoiceActivity"
+    android:orientation="vertical">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- Business Name and Logo -->
+        <ImageView
+            android:id="@+id/logoImageView"
+            android:layout_width="148dp"
+            android:layout_height="127dp"
+            android:src="@drawable/logo"
+            />
+
+        <TextView
+            android:id="@+id/businessNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-30dp"
+            android:text="THANAL EVENTS"
+            android:textColor="@color/Blue"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:textSize="20sp"
+            />
+        <TextView
+            android:id="@+id/contactTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SARALIKATTE 9880478873"
+            android:textColor="@color/color"
+            android:fontFamily="@font/calibri"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            />
+
+    </LinearLayout>
+
+    <!-- Add Item Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <EditText
+            android:id="@+id/itemEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Item Name"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/quantityEditText"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:hint="Quantity"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/rateEditText"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:hint="Rate"
+            android:inputType="numberDecimal" />
+
+        <Button
+            android:id="@+id/addItemButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Item" />
+
+    </LinearLayout>
+
+    <!-- Invoice Items -->
+    <ListView
+        android:id="@+id/itemListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Total Amount -->
+    <TextView
+        android:id="@+id/totalAmountTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Amount: Rs0.00"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Save PDF Button -->
+    <Button
+        android:id="@+id/savePdfButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save as PDF" />
+
+</LinearLayout>
