@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Build;
@@ -36,6 +38,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.ByteArrayOutputStream;
@@ -73,7 +76,6 @@ public class InvoiceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_invoice);
 
         // Initialize views
-        logoImageView = findViewById(R.id.logoImageView);
         totalAmountTextView = findViewById(R.id.totalAmountTextView);
         itemSpinner = findViewById(R.id.spinner_item);
         quantityEditText = findViewById(R.id.quantityEditText);
@@ -85,9 +87,8 @@ public class InvoiceActivity extends AppCompatActivity {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.item_list, android.R.layout.simple_spinner_item);
         itemSpinner.setAdapter(adapter);
 
-        // Set the logo image
-        Bitmap logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-        logoImageView.setImageBitmap(logoBitmap);
+        Drawable drawable = getResources().getDrawable(R.drawable.header);
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
 
         // Initialize the invoice items list and adapter
         invoiceItems = new ArrayList<>();
@@ -139,7 +140,7 @@ public class InvoiceActivity extends AppCompatActivity {
 
                 // Calculate and update the total amount
                 double totalAmount = calculateTotalAmount();
-                totalAmountTextView.setText(String.format("Total Amount: Rs%.2f", totalAmount));
+                totalAmountTextView.setText(String.format("Total Amount: Rs %.2f", totalAmount));
 
                 // Clear input fields
                 quantityEditText.setText("");
@@ -147,18 +148,6 @@ public class InvoiceActivity extends AppCompatActivity {
             }
         });
 
-        // Request permission launcher
-        requestPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                isGranted -> {
-                    if (isGranted) {
-                        createPdfFile();
-                    } else {
-                        Toast.makeText(this, "Permission denied. Cannot save PDF.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-        // Create file launcher
         createFileLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -168,10 +157,25 @@ public class InvoiceActivity extends AppCompatActivity {
                             Uri uri = intent.getData();
                             if (uri != null) {
                                 savePdfDocument(uri);
+                            } else {
+                                Toast.makeText(this, "Failed to create PDF. Uri is null.", Toast.LENGTH_SHORT).show();
                             }
+                        } else {
+                            Toast.makeText(this, "Failed to create PDF. Intent is null.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
+
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        createPdfFile();
+                    } else {
+                        Toast.makeText(this, "Permission denied. Unable to create PDF.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
 
         // Save PDF button click listener
         savePdfButton.setOnClickListener(new View.OnClickListener() {
@@ -220,191 +224,161 @@ public class InvoiceActivity extends AppCompatActivity {
             intent.putExtra(Intent.EXTRA_TITLE, "invoice.pdf");
             createFileLauncher.launch(intent);
         } else {
-            savePdfLegacy();
+            savePdfLegacy(null);
         }
     }
 
     private void savePdfDocument(Uri uri) {
-        try {
-            ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri, "w");
-            if (pfd != null) {
-                FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+        new Thread(() -> {
+            try {
+                OutputStream outputStream = getContentResolver().openOutputStream(uri);
+                if (outputStream != null) {
+                    // Create a new document
+                    com.itextpdf.text.Document document = new com.itextpdf.text.Document();
 
-                // Create a new document
-                com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+                    // Set page size and margins
+                    document.setPageSize(PageSize.A4);
+                    document.setMargins(50, 50, 50, 50);
 
-                // Set page size and margins
-                document.setPageSize(PageSize.A4);
-                document.setMargins(50, 50, 50, 50);
+                    // Create a PdfWriter instance
+                    PdfWriter pdfWriter = PdfWriter.getInstance(document, outputStream);
 
-                // Create a PdfWriter instance
-                PdfWriter pdfWriter = PdfWriter.getInstance(document, fileOutputStream);
+                    // Open the document
+                    document.open();
 
-                // Open the document
-                document.open();
+                    // Add the header (business name and logo)
+                    Bitmap logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.header);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    logoBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    com.itextpdf.text.Image logoImage = com.itextpdf.text.Image.getInstance(byteArray);
 
-                // Add the header (business name and logo)
-                Bitmap logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                logoBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] byteArray = stream.toByteArray();
-                com.itextpdf.text.Image logoImage = com.itextpdf.text.Image.getInstance(byteArray);
-                logoImage.scaleToFit(100, 100);
-                document.add(logoImage);
-                document.add(new com.itextpdf.text.Paragraph("THANAL EVENTS SARALIKATTE", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20)));
+                    // Set the image alignment and width to fit the page
+                    logoImage.setAlignment(com.itextpdf.text.Image.ALIGN_TOP);
+                    logoImage.scaleAbsoluteWidth(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
 
-                // Add the client name
-                String clientName = clientEditText.getText().toString();
-                document.add(new com.itextpdf.text.Paragraph("Client Name: " + clientName));
+                    // Add the logo image to the document
+                    document.add(logoImage);
 
-                // Add the spinner item
-                String spinnerItem = itemSpinner.getSelectedItem().toString();
-                document.add(new com.itextpdf.text.Paragraph("Item: " + spinnerItem));
+                    // Add the client name
+                    String clientName = clientEditText.getText().toString();
+                    document.add(new com.itextpdf.text.Paragraph("Client Name: " + clientName));
 
-                // Add the invoice items
-                for (InvoiceItem item : invoiceItems) {
-                    document.add(new com.itextpdf.text.Paragraph(item.getItem()));
-                    document.add(new com.itextpdf.text.Paragraph("Quantity: " + item.getQuantity()));
-                    document.add(new com.itextpdf.text.Paragraph("Rate: Rs " + item.getRate()));
-                    document.add(new com.itextpdf.text.Paragraph("Price: Rs " + item.getPrice()));
-                    document.add(new com.itextpdf.text.Paragraph("\n"));
+                    // Add the invoice table
+                    PdfPTable table = new PdfPTable(5);
+                    table.setWidthPercentage(100);
+                    table.setSpacingBefore(20f);
+                    table.setSpacingAfter(20f);
+
+                    // Add table headers
+                    table.addCell("Sl. No.");
+                    table.addCell("Item Name");
+                    table.addCell("Quantity");
+                    table.addCell("Rate");
+                    table.addCell("Total");
+
+                    // Add table rows for invoice items
+                    int slNo = 1;
+                    for (InvoiceItem item : invoiceItems) {
+                        table.addCell(String.valueOf(slNo));
+                        table.addCell(item.getItem());
+                        table.addCell(String.valueOf(item.getQuantity()));
+                        table.addCell("Rs " + item.getRate());
+                        table.addCell("Rs " + item.getPrice());
+                        slNo++;
+                    }
+
+                    // Add the table to the document
+                    document.add(table);
+
+                    // Add the total amount
+                    document.add(new com.itextpdf.text.Paragraph("Total Amount: Rs " + calculateTotalAmount()));
+
+                    // Close the document
+                    document.close();
+                    pdfWriter.close();
+                    outputStream.close();
+
+                    runOnUiThread(() -> Toast.makeText(this, "PDF saved successfully!", Toast.LENGTH_SHORT).show());
                 }
-
-                // Add the total amount
-                document.add(new com.itextpdf.text.Paragraph("Total Amount: Rs " + calculateTotalAmount()));
-
-                // Close the document
-                document.close();
-                pdfWriter.close();
-
-                Toast.makeText(this, "PDF saved successfully!", Toast.LENGTH_SHORT).show();
+            } catch (IOException | DocumentException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show());
             }
-        } catch (IOException | DocumentException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
-        }
+        }).start();
     }
 
-    private void savePdfLegacy() {
-        // Create a new document
-        PdfDocument document = new PdfDocument();
 
-        // Create a page info
-        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
+    private void savePdfLegacy(Uri uri) {
+        new Thread(() -> {
+            try {
+                OutputStream outputStream = getContentResolver().openOutputStream(uri);
+                if (outputStream != null) {
+                    // Create a new document
+                    PdfDocument document = new PdfDocument();
 
-        // Start a page
-        PdfDocument.Page page = document.startPage(pageInfo);
+                    // Create a page info
+                    PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
 
-        // Create a canvas for drawing
-        Canvas canvas = page.getCanvas();
+                    // Start a page
+                    PdfDocument.Page page = document.startPage(pageInfo);
 
-        // Add the header (business name and logo)
-        Bitmap logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-        int logoWidth = logoBitmap.getWidth();
-        int logoHeight = logoBitmap.getHeight();
-        int centerX = pageInfo.getPageWidth() / 2;
-        int logoLeft = centerX - (logoWidth / 2);
-        int logoTop = 50;
-        canvas.drawBitmap(logoBitmap, logoLeft, logoTop, null);
+                    // Get the canvas of the page
+                    Canvas canvas = page.getCanvas();
 
-        // Set font style for the header
-        Paint headerPaint = new Paint();
-        headerPaint.setTextSize(16f);
-        headerPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                    // Add the header (business name and logo)
+                    Bitmap logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.header);
+                    Bitmap scaledBitmap = Bitmap.createScaledBitmap(logoBitmap, pageInfo.getPageWidth(), logoBitmap.getHeight(), true);
+                    canvas.drawBitmap(scaledBitmap, 0, 0, null);
 
-        // Add business name
-        String businessName = "THANAL EVENTS";
-        float businessNameWidth = headerPaint.measureText(businessName);
-        int businessNameLeft = centerX - (int) (businessNameWidth / 2);
-        int businessNameTop = logoTop + logoHeight + 30;
-        canvas.drawText(businessName, businessNameLeft, businessNameTop, headerPaint);
+                    // Add the client name
+                    String clientName = clientEditText.getText().toString();
+                    canvas.drawText("Client Name: " + clientName, 50, logoBitmap.getHeight() + 50, new Paint());
 
-        // Set font style for address and contact details
-        Paint detailsPaint = new Paint();
-        detailsPaint.setTextSize(12f);
+                    // Add the invoice table
+                    float y = logoBitmap.getHeight() + 100; // Set the initial y position
+                    float lineHeight = 30; // Define the line height
 
-        // Add business address
-        String businessAddress = "SARALIKATTE, THEKKAR POST & VILLAGE, BELTHANGADY TALUK";
-        float businessAddressWidth = detailsPaint.measureText(businessAddress);
-        int businessAddressLeft = centerX - (int) (businessAddressWidth / 2);
-        int businessAddressTop = businessNameTop + 20;
-        canvas.drawText(businessAddress, businessAddressLeft, businessAddressTop, detailsPaint);
+                    // Add table headers
+                    canvas.drawText("Sl. No.", 50, y, new Paint());
+                    canvas.drawText("Item Name", 150, y, new Paint());
+                    canvas.drawText("Quantity", 300, y, new Paint());
+                    canvas.drawText("Rate", 400, y, new Paint());
+                    canvas.drawText("Total", 500, y, new Paint());
 
-        // Add business contact
-        String businessContact = "+91 9880478873";
-        float businessContactWidth = detailsPaint.measureText(businessContact);
-        int businessContactLeft = centerX - (int) (businessContactWidth / 2);
-        int businessContactTop = businessAddressTop + 20;
-        canvas.drawText(businessContact, businessContactLeft, businessContactTop, detailsPaint);
+                    // Add table rows for invoice items
+                    int slNo = 1;
+                    for (InvoiceItem item : invoiceItems) {
+                        y += lineHeight;
+                        canvas.drawText(String.valueOf(slNo), 50, y, new Paint());
+                        canvas.drawText(item.getItem(), 150, y, new Paint());
+                        canvas.drawText(String.valueOf(item.getQuantity()), 300, y, new Paint());
+                        canvas.drawText("Rs " + item.getRate(), 400, y, new Paint());
+                        canvas.drawText("Rs " + item.getPrice(), 500, y, new Paint());
+                        slNo++;
+                    }
 
-        // Add the client name
-        String clientName = clientEditText.getText().toString();
-        canvas.drawText("Client Name: " + clientName, 50, businessContactTop + 30, null);
+                    // Add the total amount
+                    y += lineHeight * 2; // Add extra space after the table
+                    canvas.drawText("Total Amount: Rs " + calculateTotalAmount(), 50, y, new Paint());
 
-        // Set font style for the table
-        Paint tablePaint = new Paint();
-        tablePaint.setTextSize(14f);
+                    // Finish the page
+                    document.finishPage(page);
 
-        // Define table column widths
-        int serialNumberColumn = 50;
-        int itemColumn = 200;
-        int quantityColumn = 350;
-        int rateColumn = 450;
-        int priceColumn = 550;
+                    // Write the document content to the output stream
+                    document.writeTo(outputStream);
 
-        // Draw table headers
-        canvas.drawText("Serial No.", serialNumberColumn, businessContactTop + 80, tablePaint);
-        canvas.drawText("Item", itemColumn, businessContactTop + 80, tablePaint);
-        canvas.drawText("Quantity", quantityColumn, businessContactTop + 80, tablePaint);
-        canvas.drawText("Rate", rateColumn, businessContactTop + 80, tablePaint);
-        canvas.drawText("Price", priceColumn, businessContactTop + 80, tablePaint);
+                    // Close the document
+                    document.close();
+                    outputStream.close();
 
-        // Add the invoice items
-        int y = businessContactTop + 120;
-        int serialNumber = 1;
-        for (InvoiceItem item : invoiceItems) {
-            // Draw serial number
-            canvas.drawText(String.valueOf(serialNumber), serialNumberColumn, y, tablePaint);
-
-            // Draw item
-            canvas.drawText(item.getItem(), itemColumn, y, tablePaint);
-
-            // Draw quantity
-            canvas.drawText(String.valueOf(item.getQuantity()), quantityColumn, y, tablePaint);
-
-            // Draw rate
-            canvas.drawText("Rs " + item.getRate(), rateColumn, y, tablePaint);
-
-            // Draw price
-            canvas.drawText("Rs " + item.getPrice(), priceColumn, y, tablePaint);
-
-            y += 30;
-            serialNumber++;
-        }
-
-        // Add the total amount
-        String totalAmount = "Total Amount: Rs " + calculateTotalAmount();
-        Paint totalPaint = new Paint();
-        totalPaint.setTextSize(14f);
-        totalPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        canvas.drawText(totalAmount, 50, y + 30, totalPaint);
-
-        // Finish the page
-        document.finishPage(page);
-
-        // Save the document
-        String fileName = "invoice.pdf";
-        File filePath = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName);
-        try {
-            OutputStream outputStream = new FileOutputStream(filePath);
-            document.writeTo(outputStream);
-            document.close();
-            outputStream.close();
-            Toast.makeText(this, "PDF saved successfully!", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
-        }
+                    runOnUiThread(() -> Toast.makeText(this, "PDF saved successfully!", Toast.LENGTH_SHORT).show());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
 }

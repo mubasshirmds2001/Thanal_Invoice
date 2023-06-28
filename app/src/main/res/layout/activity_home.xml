@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/home_back"
+    tools:context=".Home_Activity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- Business Name and Logo -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:src="@drawable/logo"
+            />
+
+        <TextView
+            android:id="@+id/businessNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-30dp"
+            android:text="THANAL EVENTS"
+            android:textColor="@color/Blue"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:textSize="40sp"
+            />
+
+        <TextView
+            android:id="@+id/labelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Converting Your Dreams Into Reality"
+            android:textColor="@color/purple_500"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            />
+
+        <TextView
+            android:id="@+id/contactTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SARALIKATTE 9880478873"
+            android:textColor="@color/color"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            />
+
+        <Button
+            android:id="@+id/Billbtn"
+            android:layout_width="250dp"
+            android:layout_marginTop="40dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button"
+            android:fontFamily="@font/gilroy_extrabold"
+            android:textSize="22dp"
+            android:text="Create New Bill" />
+
+    </LinearLayout>
+
+</LinearLayout>

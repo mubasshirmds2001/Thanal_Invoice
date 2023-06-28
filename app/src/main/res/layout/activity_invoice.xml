@@ -8,51 +8,24 @@
     android:scrollbars="vertical"
     android:fadeScrollbars="true">
 
+    <TextView
+        android:id="@+id/TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NEW BILL"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:textColor="@color/color"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
     <!-- Header -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <!-- Business Name and Logo -->
-        <ImageView
-            android:id="@+id/logoImageView"
-            android:layout_width="148dp"
-            android:layout_height="127dp"
-            android:layout_marginLeft="-120dp"
-            android:src="@drawable/logo"
-            />
-
-        <TextView
-            android:id="@+id/businessNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="-90dp"
-            android:text="THANAL EVENTS"
-            android:textColor="@color/Blue"
-            android:fontFamily="@font/gilroy_extrabold"
-            android:textSize="20sp"
-            />
-        <TextView
-            android:id="@+id/contactTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SARALIKATTE 9880478873"
-            android:textColor="@color/color"
-            android:fontFamily="@font/calibri"
-            android:textSize="20sp"
-            android:layout_marginLeft="50dp"
-            android:textStyle="bold"
-            />
-
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginTop="20dp"
         android:padding="10dp">
 
         <com.google.android.material.textfield.TextInputLayout
@@ -67,6 +40,7 @@
                 android:layout_weight="1"
                 android:hint="Client Name"
                 android:inputType="text"
+                android:background="@drawable/edittext"
                 android:importantForAutofill="no"
                 android:labelFor="@+id/clientEditText"
                 tools:ignore="Autofill" />
@@ -88,6 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:spinnerMode="dropdown"
+                android:background="@drawable/edittext"
                 android:tooltipText="Items List"
                 tools:ignore="DuplicateIds" />
 
@@ -111,6 +86,7 @@
                 android:id="@+id/quantityEditText"
                 android:layout_width="170dp"
                 android:layout_height="wrap_content"
+                android:background="@drawable/edittext"
                 android:hint="Quantity"
                 android:layout_marginLeft="15dp"
                 android:inputType="number" />
@@ -128,6 +104,7 @@
                 android:layout_width="170dp"
                 android:layout_height="wrap_content"
                 android:hint="Rate"
+                android:background="@drawable/edittext"
                 android:layout_marginLeft="10dp"
                 android:inputType="numberDecimal" />
 
@@ -145,7 +122,7 @@
         <Button
             android:id="@+id/addItemButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@drawable/button"
             android:text="Add Item To list" />
 
@@ -156,6 +133,8 @@
     <ListView
         android:id="@+id/itemListView"
         android:layout_width="match_parent"
+        android:layout_marginTop="10dp"
+        android:padding="10dp"
         android:layout_height="0dp"
         android:layout_weight="1" />
 

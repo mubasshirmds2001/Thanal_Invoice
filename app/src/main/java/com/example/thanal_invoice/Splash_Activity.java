@@ -49,7 +49,7 @@ public class Splash_Activity extends AppCompatActivity {
             @Override
             public void run() {
 
-                    startActivity(new Intent(getApplicationContext(),InvoiceActivity.class));
+                    startActivity(new Intent(getApplicationContext(),Home_Activity.class));
                     finish();
                 }
         }, 2000);
