@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="UselessParent">
 
         <!-- Business Name and Logo -->
         <ImageView
@@ -19,7 +20,7 @@
             android:layout_width="300dp"
             android:layout_height="300dp"
             android:src="@drawable/logo"
-            />
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/businessNameTextView"
@@ -30,7 +31,7 @@
             android:textColor="@color/Blue"
             android:fontFamily="@font/gilroy_extrabold"
             android:textSize="40sp"
-            />
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/labelTextView"
@@ -42,7 +43,7 @@
             android:fontFamily="@font/gilroy_extrabold"
             android:textSize="20sp"
             android:textStyle="bold"
-            />
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/contactTextView"
@@ -54,17 +55,18 @@
             android:fontFamily="@font/gilroy_extrabold"
             android:textSize="20sp"
             android:textStyle="bold"
-            />
+            tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/Billbtn"
             android:layout_width="250dp"
-            android:layout_marginTop="40dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
             android:background="@drawable/button"
             android:fontFamily="@font/gilroy_extrabold"
+            android:text="Create New Bill"
             android:textSize="22dp"
-            android:text="Create New Bill" />
+            tools:ignore="HardcodedText,SpUsage,TextSizeCheck" />
 
     </LinearLayout>
 

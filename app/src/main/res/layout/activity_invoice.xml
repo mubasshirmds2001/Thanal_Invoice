@@ -17,7 +17,8 @@
         android:layout_gravity="center"
         android:textColor="@color/color"
         android:textSize="28sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
 
     <!-- Header -->
 
@@ -38,12 +39,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Client Name"
-                android:inputType="text"
                 android:background="@drawable/edittext"
+                android:hint="Client Name"
                 android:importantForAutofill="no"
+                android:inputType="text"
                 android:labelFor="@+id/clientEditText"
-                tools:ignore="Autofill" />
+                tools:ignore="Autofill,HardcodedText,LabelFor,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -57,14 +58,15 @@
         android:orientation="horizontal"
         android:padding="10dp">
 
-            <Spinner
-                android:id="@+id/spinner_item"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:spinnerMode="dropdown"
-                android:background="@drawable/edittext"
-                android:tooltipText="Items List"
-                tools:ignore="DuplicateIds" />
+        <Spinner
+            android:id="@+id/spinner_item"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/edittext"
+            android:spinnerMode="dropdown"
+            android:tooltipText="Items List"
+            tools:ignore="DuplicateIds,SpeakableTextPresentCheck"
+            tools:targetApi="o" />
 
 
     </LinearLayout>
@@ -74,7 +76,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_gravity="center"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:baselineAligned="false">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
@@ -86,10 +89,12 @@
                 android:id="@+id/quantityEditText"
                 android:layout_width="170dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
                 android:background="@drawable/edittext"
                 android:hint="Quantity"
-                android:layout_marginLeft="15dp"
-                android:inputType="number" />
+                android:inputType="number"
+                tools:ignore="HardcodedText,RtlHardcoded,SpeakableTextPresentCheck"
+                android:importantForAutofill="no" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,10 +108,12 @@
                 android:id="@+id/rateEditText"
                 android:layout_width="170dp"
                 android:layout_height="wrap_content"
-                android:hint="Rate"
-                android:background="@drawable/edittext"
                 android:layout_marginLeft="10dp"
-                android:inputType="numberDecimal" />
+                android:background="@drawable/edittext"
+                android:hint="Rate"
+                android:inputType="number"
+                tools:ignore="HardcodedText,RtlHardcoded,SpeakableTextPresentCheck"
+                android:importantForAutofill="no" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -124,7 +131,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@drawable/button"
-            android:text="Add Item To list" />
+            android:text="Add Item To list"
+            tools:ignore="HardcodedText" />
 
     </LinearLayout>
 
@@ -135,27 +143,32 @@
         android:layout_width="match_parent"
         android:layout_marginTop="10dp"
         android:padding="10dp"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="230dp"
+        android:layout_weight="0"
+        tools:ignore="InefficientWeight" />
 
     <!-- Total Amount -->
     <TextView
         android:id="@+id/totalAmountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="Total Amount: Rs 0.00"
         android:layout_gravity="center"
         android:textColor="@color/Blue"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        tools:ignore="HardcodedText" />
 
     <!-- Save PDF Button -->
     <Button
-        android:id="@+id/savePdfButton"
+        android:id="@+id/saveListButton"
         android:layout_width="150dp"
+        android:layout_height="48dp"
         android:layout_gravity="center"
-        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/button"
-        android:text="Save as PDF" />
+        android:text="Save"
+        tools:ignore="HardcodedText" />
 
 </LinearLayout>
