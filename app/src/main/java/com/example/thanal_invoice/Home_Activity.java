@@ -27,4 +27,8 @@ public class Home_Activity extends AppCompatActivity {
             }
         });
     }
+    @Override
+    public void onBackPressed() {
+        finish(); // Finish the current activity
+    }
 }

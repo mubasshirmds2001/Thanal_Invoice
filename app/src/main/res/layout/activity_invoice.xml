@@ -10,12 +10,15 @@
 
     <TextView
         android:id="@+id/TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
         android:text="NEW BILL"
-        android:layout_marginTop="20dp"
+        android:paddingTop="10dp"
+        android:textAlignment="center"
+        android:background="@drawable/textview_background"
+        android:layout_marginTop="40dp"
         android:layout_gravity="center"
-        android:textColor="@color/color"
+        android:textColor="@color/colorAccent"
         android:textSize="28sp"
         android:textStyle="bold"
         tools:ignore="HardcodedText" />
@@ -178,7 +181,7 @@
         android:layout_width="150dp"
         android:layout_height="48dp"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/button"
         android:text="Save"
         tools:ignore="HardcodedText" />

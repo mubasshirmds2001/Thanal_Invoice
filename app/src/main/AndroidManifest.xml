@@ -16,11 +16,14 @@
         android:theme="@style/Theme.Thanal_Invoice"
         tools:targetApi="31">
         <activity
+            android:name=".Display_activity"
+            android:exported="false" />
+        <activity
             android:name=".Home_Activity"
             android:exported="false" />
         <activity
             android:name=".InvoiceActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".Splash_Activity"
             android:exported="true">

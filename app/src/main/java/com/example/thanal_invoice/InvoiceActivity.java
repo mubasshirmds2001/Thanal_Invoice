@@ -1,6 +1,7 @@
 package com.example.thanal_invoice;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -153,10 +154,10 @@ public class InvoiceActivity extends AppCompatActivity {
                     databaseReference = firebaseDatabase.getReference("Bills");
 
                     // Generate a random ID for the list
-                    String clientName = clientEditText.getText().toString().trim();
+                    String BillNumber = databaseReference.push().getKey();
 
                     // Store the entire list in the database under the list ID
-                    databaseReference.child(clientName).setValue(invoiceItems)
+                    databaseReference.child(BillNumber).setValue(invoiceItems)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -173,5 +174,13 @@ public class InvoiceActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Go to the HomeActivity
+        Intent intent = new Intent(this, Home_Activity.class);
+        startActivity(intent);
+        finish(); // Finish the current activity
     }
 }
