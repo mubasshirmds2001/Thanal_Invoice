@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "176815985727",
+    "project_id": "thanal-invoice-afdc5",
+    "storage_bucket": "thanal-invoice-afdc5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:176815985727:android:781116dbc12dd71431d48a",
+        "android_client_info": {
+          "package_name": "com.example.thanal_invoice"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "176815985727-lcq5sik4m058vgbjglvh0o3lr5mhkqt4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsucTeIdeKOPCn5JI57q78jntzpB3P6Mo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "176815985727-lcq5sik4m058vgbjglvh0o3lr5mhkqt4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

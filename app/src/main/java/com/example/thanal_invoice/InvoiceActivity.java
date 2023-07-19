@@ -28,8 +28,10 @@ public class InvoiceActivity extends AppCompatActivity {
     private EditText quantityEditText;
     private EditText rateEditText;
     private TextView totalAmountTextView;
+    private TextView priceTextView;
 
     private Button addItemButton;
+    private Button clearItemButton;
     private Button saveListButton;
 
     private ListView itemListView;
@@ -56,17 +58,21 @@ public class InvoiceActivity extends AppCompatActivity {
         rateEditText = findViewById(R.id.rateEditText);
         totalAmountTextView = findViewById(R.id.totalAmountTextView);
         addItemButton = findViewById(R.id.addItemButton);
+        clearItemButton = findViewById(R.id.clearItemButton);
         saveListButton = findViewById(R.id.saveListButton);
         itemListView = findViewById(R.id.itemListView);
+        priceTextView = findViewById(R.id.priceTextView);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.item_list, android.R.layout.simple_spinner_item);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.item_list, android.R.layout.simple_spinner_dropdown_item);
         spinner_item.setAdapter(adapter);
+        String defValue = "Select Items";
+        int position = adapter.getPosition(defValue);  // get position of value
+        spinner_item.setSelection(position);  // set selected item by position
 
         // Initialize the invoice items list and adapter
         invoiceItems = new ArrayList<>();
         itemAdapter = new InvoiceItemAdapter(this, invoiceItems);
         itemListView.setAdapter(itemAdapter);
-        final int[] itemCount = {1};
 
         // Add item button click listener
         addItemButton.setOnClickListener(v -> {
@@ -103,7 +109,6 @@ public class InvoiceActivity extends AppCompatActivity {
             // Create a new invoice item
             InvoiceItem invoiceItem = new InvoiceItem(clientName,spinnerItem, Quantity, Rate,Price);
 
-            itemCount[0]++;
 
             // Add the item to the list
             invoiceItems.add(invoiceItem);
@@ -116,38 +121,42 @@ public class InvoiceActivity extends AppCompatActivity {
             rateEditText.setText("");
             quantityEditText.requestFocus();
 
-            // Calculate and update the total amount
-            int totalAmount = 0;
-            for (InvoiceItem item : invoiceItems) {
-                totalAmount += item.getPrice();
+            double grandTotal = 0.0;
+
+            // Update the totalAmount variable by adding the price of the current item
+            grandTotal += Double.parseDouble(Price);
+
+            // Set the totalAmount in the TextView
+            totalAmountTextView.setText("Grand Total :"+String.valueOf(grandTotal));
+
+        });
+
+        clearItemButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Clear the invoiceItems list
+                invoiceItems.clear();
+
+                // Notify the adapter of the data set change
+                itemAdapter.notifyDataSetChanged();
             }
-            Amount = totalAmount;
-            totalAmountTextView.setText(String.format("Total Amount: Rs ", totalAmount));
         });
 
         saveListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                String clientName = clientEditText.getText().toString().trim();
-                String spinnerItem = spinner_item.getSelectedItem().toString();
-                String Quantity = quantityEditText.getText().toString().trim();
-                String Rate = rateEditText.getText().toString().trim();
-                String Price = String.valueOf(Amount);
-
-                // Create a new invoice item
-                InvoiceItem invoiceItem = new InvoiceItem(clientName,spinnerItem, Quantity, Rate,Price);
-
-                // Add the item to the list
-                invoiceItems.add(invoiceItem);
-
-                // Check if at least one item is present
+                // Check if at least one item is present in the ListView
                 if (invoiceItems.size() > 0) {
                     // At least one item is present, proceed with adding data to the database
                     firebaseDatabase = FirebaseDatabase.getInstance();
                     databaseReference = firebaseDatabase.getReference("Bills");
 
-                    databaseReference.child(clientName).child(String.valueOf(itemCount[0])).setValue(invoiceItem)
+                    // Generate a random ID for the list
+                    String clientName = clientEditText.getText().toString().trim();
+
+                    // Store the entire list in the database under the list ID
+                    databaseReference.child(clientName).setValue(invoiceItems)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {

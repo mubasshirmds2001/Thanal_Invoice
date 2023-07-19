@@ -63,6 +63,8 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:background="@drawable/edittext"
+            android:dropDownHeight="300dp"
+            android:minWidth="10dp"
             android:spinnerMode="dropdown"
             android:tooltipText="Items List"
             tools:ignore="DuplicateIds,SpeakableTextPresentCheck"
@@ -128,10 +130,20 @@
 
         <Button
             android:id="@+id/addItemButton"
-            android:layout_width="wrap_content"
+            android:layout_width="150dp"
+            android:layout_marginRight="10dp"
             android:layout_height="match_parent"
             android:background="@drawable/button"
-            android:text="Add Item To list"
+            android:text="Add Item"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/clearItemButton"
+            android:layout_width="150dp"
+            android:layout_marginLeft="10dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/button"
+            android:text="Clear Items"
             tools:ignore="HardcodedText" />
 
     </LinearLayout>

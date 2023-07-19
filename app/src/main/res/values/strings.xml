@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Thanal_Invoice</string>
     <string-array name="item_list">
+        <item>Select Items</item>
         <item>Chair</item>
         <item>Table</item>
         <item>Table</item>
