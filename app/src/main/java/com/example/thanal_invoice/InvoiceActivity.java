@@ -1,8 +1,17 @@
 package com.example.thanal_invoice;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,12 +23,28 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.property.TextAlignment;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class InvoiceActivity extends AppCompatActivity {
@@ -29,22 +54,19 @@ public class InvoiceActivity extends AppCompatActivity {
     private EditText quantityEditText;
     private EditText rateEditText;
     private TextView totalAmountTextView;
-    private TextView priceTextView;
 
-    private Button addItemButton;
-    private Button clearItemButton;
-    private Button saveListButton;
+    public Button addItemButton;
+    public Button clearItemButton;
+    public Button saveListButton;
 
     private ListView itemListView;
 
     private ArrayList<InvoiceItem> invoiceItems;
     private InvoiceItemAdapter itemAdapter;
 
-    DatabaseReference databaseReference;
-
-    FirebaseDatabase firebaseDatabase;
-
     public double Amount;
+
+    private static final int PERMISSION_REQUEST_CODE = 123;
 
     @SuppressLint({"MissingInflatedId", "DefaultLocale"})
     @Override
@@ -62,7 +84,7 @@ public class InvoiceActivity extends AppCompatActivity {
         clearItemButton = findViewById(R.id.clearItemButton);
         saveListButton = findViewById(R.id.saveListButton);
         itemListView = findViewById(R.id.itemListView);
-        priceTextView = findViewById(R.id.priceTextView);
+        TextView priceTextView = findViewById(R.id.priceTextView);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.item_list, android.R.layout.simple_spinner_dropdown_item);
         spinner_item.setAdapter(adapter);
@@ -81,6 +103,7 @@ public class InvoiceActivity extends AppCompatActivity {
             String clientName = clientEditText.getText().toString().trim();
             if (clientName.isEmpty()) {
                 clientEditText.setError("Client name is required.");
+                clientEditText.requestFocus();
                 return;
             }
 
@@ -108,7 +131,7 @@ public class InvoiceActivity extends AppCompatActivity {
             String Price = String.valueOf(quantity * rate);
 
             // Create a new invoice item
-            InvoiceItem invoiceItem = new InvoiceItem(clientName,spinnerItem, Quantity, Rate,Price);
+            InvoiceItem invoiceItem = new InvoiceItem(clientName, spinnerItem, Quantity, Rate, Price);
 
 
             // Add the item to the list
@@ -128,8 +151,23 @@ public class InvoiceActivity extends AppCompatActivity {
             grandTotal += Double.parseDouble(Price);
 
             // Set the totalAmount in the TextView
-            totalAmountTextView.setText("Grand Total :"+String.valueOf(grandTotal));
+            totalAmountTextView.setText("Grand Total :" + String.valueOf(grandTotal));
 
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
+        });
+
+        saveListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    generatePDF();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         });
 
         clearItemButton.setOnClickListener(new View.OnClickListener() {
@@ -142,38 +180,62 @@ public class InvoiceActivity extends AppCompatActivity {
                 itemAdapter.notifyDataSetChanged();
             }
         });
+    }
 
-        saveListButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+    private void generatePDF() throws IOException {
+        String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+        File file = new File(pdfPath, "Invoice.pdf");
+        OutputStream outputStream = new FileOutputStream(file);
 
-                // Check if at least one item is present in the ListView
-                if (invoiceItems.size() > 0) {
-                    // At least one item is present, proceed with adding data to the database
-                    firebaseDatabase = FirebaseDatabase.getInstance();
-                    databaseReference = firebaseDatabase.getReference("Bills");
 
-                    // Generate a random ID for the list
-                    String BillNumber = databaseReference.push().getKey();
+        PdfWriter writer = new PdfWriter(file);
+        PdfDocument pdfdocument = new PdfDocument(writer);
+        Document document1 = new Document(pdfdocument);
 
-                    // Store the entire list in the database under the list ID
-                    databaseReference.child(BillNumber).setValue(invoiceItems)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(getApplicationContext(), "Data Inserted", Toast.LENGTH_LONG).show();
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), "Failed to insert data", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
-                } else {
-                    // No items are present, show an error message or take appropriate action
-                    Toast.makeText(getApplicationContext(), "Please add at least one item.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        pdfdocument.setDefaultPageSize(PageSize.A4);
+        document1.setMargins(0,0,0,0);
+
+        Drawable drawable = getDrawable(R.drawable.header);
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
+        byte[] bitmapdata = stream.toByteArray();
+
+        ImageData imageData = ImageDataFactory.create(bitmapdata);
+        Image image = new Image(imageData);
+
+        Paragraph clientname = new Paragraph("Client Name :").setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT);
+        Paragraph cname = new Paragraph(clientEditText.getText().toString()).setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT);
+
+        // Add table header
+        Table table = new Table(new float[]{1, 3, 2, 2, 2});
+        table.addHeaderCell(new Cell().add(new Paragraph("Sl.No.").setTextAlignment(TextAlignment.CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Item Name").setTextAlignment(TextAlignment.CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Quantity").setTextAlignment(TextAlignment.CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Rate").setTextAlignment(TextAlignment.CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Total Amount").setTextAlignment(TextAlignment.CENTER)));
+
+        // Add items to table
+        int slNo = 1;
+        for (InvoiceItem item : invoiceItems) {
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(slNo++)).setTextAlignment(TextAlignment.CENTER)));
+            table.addCell(new Cell().add(new Paragraph(item.getItem()).setTextAlignment(TextAlignment.CENTER)));
+            table.addCell(new Cell().add(new Paragraph(item.getQty()).setTextAlignment(TextAlignment.CENTER)));
+            table.addCell(new Cell().add(new Paragraph(item.getRate()).setTextAlignment(TextAlignment.CENTER)));
+            table.addCell(new Cell().add(new Paragraph(String.valueOf(item.getPrice())).setTextAlignment(TextAlignment.CENTER)));
+        }
+        document1.add(clientname);
+        document1.add(cname);
+        document1.add(table);
+
+        // Add final total
+        String grandTotalText = totalAmountTextView.getText().toString();
+        document1.add(new Paragraph(grandTotalText));
+
+        document1.close();
+        outputStream.close();
+
+        Toast.makeText(this, "PDF generated successfully", Toast.LENGTH_SHORT).show();
     }
 
     @Override

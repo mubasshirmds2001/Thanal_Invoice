@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="8dp">
+    android:layout_height="90dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="8dp"
+    android:background="@drawable/recycler_background"
+    android:layout_margin="30dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,17 +39,6 @@
                 android:textColor="@color/color"
                 android:textSize="24sp"
                 tools:ignore="HardcodedText" />
-
-            <TextView
-                android:id="@+id/section"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/gilroy_extrabold"
-                android:layout_marginLeft="10dp"
-                android:textAlignment="textStart"
-                android:textColor="@color/color"
-                android:textSize="20sp"
-                tools:ignore="RtlHardcoded" />
 
         </LinearLayout>
 
