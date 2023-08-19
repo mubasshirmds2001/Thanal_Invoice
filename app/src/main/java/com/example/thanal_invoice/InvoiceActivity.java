@@ -30,22 +30,31 @@ import androidx.core.content.FileProvider;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.events.Event;
+import com.itextpdf.kernel.events.IEventHandler;
+import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Div;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
+import com.itextpdf.layout.property.UnitValue;
+import com.itextpdf.layout.property.VerticalAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class InvoiceActivity extends AppCompatActivity {
 
@@ -204,8 +213,19 @@ public class InvoiceActivity extends AppCompatActivity {
         ImageData imageData = ImageDataFactory.create(bitmapdata);
         Image image = new Image(imageData);
 
-        Paragraph clientname = new Paragraph("Client Name :").setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT);
-        Paragraph cname = new Paragraph(clientEditText.getText().toString()).setBold().setFontSize(14).setTextAlignment(TextAlignment.LEFT);
+        Table headerTable = createHeaderTable();
+
+        // Set the position of the header
+        pdfdocument.addEventHandler(PdfDocumentEvent.START_PAGE, event -> {
+            float x = document1.getLeftMargin();
+            float y = document1.getTopMargin();
+            headerTable.setFixedPosition(x, y, PageSize.A4.getWidth());
+        });
+
+        // Add the headerTable to each page
+        pdfdocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> {
+            document1.add(headerTable);
+        });
 
         // Add table header
         Table table = new Table(new float[]{1, 3, 2, 2, 2});
@@ -224,8 +244,6 @@ public class InvoiceActivity extends AppCompatActivity {
             table.addCell(new Cell().add(new Paragraph(item.getRate()).setTextAlignment(TextAlignment.CENTER)));
             table.addCell(new Cell().add(new Paragraph(String.valueOf(item.getPrice())).setTextAlignment(TextAlignment.CENTER)));
         }
-        document1.add(clientname);
-        document1.add(cname);
         document1.add(table);
 
         // Add final total
@@ -236,6 +254,31 @@ public class InvoiceActivity extends AppCompatActivity {
         outputStream.close();
 
         Toast.makeText(this, "PDF generated successfully", Toast.LENGTH_SHORT).show();
+    }
+
+    private Table createHeaderTable() {
+        Table table = new Table(2);
+        table.setWidth(100);
+
+        // Create the first cell and add the first paragraph
+        Cell clientNameCell = new Cell();
+        Paragraph clientNameParagraph = new Paragraph("Client Name: ")
+                .setBold()
+                .setFontSize(14)
+                .setTextAlignment(TextAlignment.LEFT);
+        clientNameCell.add(clientNameParagraph);
+        table.addCell(clientNameCell);
+
+        // Create the second cell and add the second paragraph
+        Cell clientNameValueCell = new Cell();
+        Paragraph clientNameValue = new Paragraph(clientEditText.getText().toString())
+                .setBold()
+                .setFontSize(14)
+                .setTextAlignment(TextAlignment.LEFT);
+        clientNameValueCell.add(clientNameValue);
+        table.addCell(clientNameValueCell);
+
+        return table;
     }
 
     @Override
