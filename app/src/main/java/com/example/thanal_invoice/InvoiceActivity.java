@@ -1,5 +1,8 @@
 package com.example.thanal_invoice;
 
+import static com.itextpdf.layout.property.TextAlignment.CENTER;
+import static com.itextpdf.layout.property.TextAlignment.RIGHT;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -60,7 +63,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InvoiceActivity extends AppCompatActivity {
@@ -172,12 +179,16 @@ public class InvoiceActivity extends AppCompatActivity {
         saveListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    generatePDF();
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                if (invoiceItems.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "No items to save", Toast.LENGTH_SHORT).show();
+                } else {
+                    try {
+                        generatePDF();
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         });
@@ -200,8 +211,11 @@ public class InvoiceActivity extends AppCompatActivity {
         InputStream inputStream = getResources().openRawResource(templateResourceId);
         PdfReader templateReader = new PdfReader(inputStream);
 
+        String cnm = clientEditText.getText().toString();
+        String fileName = "Invoice_" + cnm + ".pdf";
+
         String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        File file = new File(pdfPath, "Invoice.pdf");
+        File file = new File(pdfPath, fileName);
         OutputStream outputStream = new FileOutputStream(file);
 
 
@@ -209,21 +223,32 @@ public class InvoiceActivity extends AppCompatActivity {
         PdfDocument pdfdocument = new PdfDocument(templateReader,writer);
         Document document1 = new Document(pdfdocument);
 
+        Paragraph in = new Paragraph("Invoice").setBold().setFontSize(32).setFontColor(new DeviceRgb(255,0,0)).setTextAlignment(CENTER).setMarginTop(90).setUnderline();
         String clientName = clientEditText.getText().toString();
         Paragraph labelParagraph = new Paragraph("Client Name: "+clientName)
-                .setBold().setFontSize(18).setMarginTop(130).setFontColor(new DeviceRgb(139, 0, 0));
+                .setBold().setFontSize(18).setMarginTop(-10).setFontColor(new DeviceRgb(139, 0, 0));
 
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        String formattedDate = String.format("%02d-%02d-%04d", day, month + 1, year);
+        Paragraph date = new Paragraph("Date:"+formattedDate).setBold().setFontSize(16).setFontColor(new DeviceRgb(128,0,128)).setTextAlignment(RIGHT).setMarginTop(-20);
+
+        document1.add(in);
+        document1.add(date);
         document1.add(labelParagraph);
         document1.add(new Paragraph("\n")); // Blank space
 
         // Add table header
-        Table table = new Table(new float[]{1, 3, 2, 2, 2}).setMarginTop(3);
+        Table table = new Table(new float[]{1, 3, 2, 2, 2}).setHorizontalAlignment(HorizontalAlignment.CENTER);
         Color headerBackgroundColor = new DeviceRgb(0, 0, 255);
-        table.addHeaderCell(new Cell().add(new Paragraph("Sl.No.").setFontColor(headerBackgroundColor).setTextAlignment(TextAlignment.CENTER)));
-        table.addHeaderCell(new Cell().add(new Paragraph("Item Name").setFontColor(headerBackgroundColor).setTextAlignment(TextAlignment.CENTER)));
-        table.addHeaderCell(new Cell().add(new Paragraph("Quantity").setFontColor(headerBackgroundColor).setTextAlignment(TextAlignment.CENTER)));
-        table.addHeaderCell(new Cell().add(new Paragraph("Rate").setFontColor(headerBackgroundColor).setTextAlignment(TextAlignment.CENTER)));
-        table.addHeaderCell(new Cell().add(new Paragraph("Total Amount").setFontColor(headerBackgroundColor).setTextAlignment(TextAlignment.CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Sl.No.").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Item Name").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Quantity").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Rate").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
+        table.addHeaderCell(new Cell().add(new Paragraph("Total Amount").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
 
         double grandTotal = 0.0;
         // Add items to table
@@ -240,7 +265,7 @@ public class InvoiceActivity extends AppCompatActivity {
         document1.add(table);
 
         Paragraph grandTotalParagraph = new Paragraph("Grand Total:  " + grandTotal)
-                .setBold().setFontSize(16).setMarginLeft(340)
+                .setBold().setFontSize(16).setMarginLeft(340).setFontColor(new DeviceRgb(255,0,0))
                 .setTextAlignment(TextAlignment.JUSTIFIED)
                 .setMarginTop(20); // Adjust as needed
         document1.add(grandTotalParagraph);
@@ -249,6 +274,8 @@ public class InvoiceActivity extends AppCompatActivity {
         outputStream.close();
 
         Toast.makeText(this, "PDF generated successfully", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, Home_Activity.class);
+        startActivity(intent);
     }
 
     private Cell createCell(String content, float width, float height) {
@@ -257,7 +284,7 @@ public class InvoiceActivity extends AppCompatActivity {
                         .setMarginTop(10).setFontColor(new DeviceRgb(255, 0, 0))
                         .setHeight(height)
                         .setWidth(width)
-                        .setTextAlignment(TextAlignment.CENTER));
+                        .setTextAlignment(CENTER));
     }
 
     @Override
