@@ -3,16 +3,8 @@ package com.example.thanal_invoice;
 import static com.itextpdf.layout.property.TextAlignment.CENTER;
 import static com.itextpdf.layout.property.TextAlignment.RIGHT;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -24,37 +16,19 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
-import com.itextpdf.io.image.ImageData;
-import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.events.Event;
-import com.itextpdf.kernel.events.IEventHandler;
-import com.itextpdf.kernel.events.PdfDocumentEvent;
-import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Div;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.layout.property.UnitValue;
-import com.itextpdf.layout.property.VerticalAlignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -62,13 +36,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class InvoiceActivity extends AppCompatActivity {
 
@@ -88,8 +57,6 @@ public class InvoiceActivity extends AppCompatActivity {
     private InvoiceItemAdapter itemAdapter;
 
     public double Amount;
-
-    private static final int PERMISSION_REQUEST_CODE = 123;
 
     @SuppressLint({"MissingInflatedId", "DefaultLocale"})
     @Override
@@ -115,12 +82,10 @@ public class InvoiceActivity extends AppCompatActivity {
         int position = adapter.getPosition(defValue);  // get position of value
         spinner_item.setSelection(position);  // set selected item by position
 
-        // Initialize the invoice items list and adapter
         invoiceItems = new ArrayList<>();
         itemAdapter = new InvoiceItemAdapter(this, invoiceItems);
         itemListView.setAdapter(itemAdapter);
 
-        // Add item button click listener
         addItemButton.setOnClickListener(v -> {
             // Validate client name
             String clientName = clientEditText.getText().toString().trim();
@@ -130,16 +95,26 @@ public class InvoiceActivity extends AppCompatActivity {
                 return;
             }
 
-            // Validate spinner selection
             String spinnerItem = spinner_item.getSelectedItem().toString();
-            if (spinnerItem.isEmpty()) {
-                Toast.makeText(InvoiceActivity.this, "Please select an item.", Toast.LENGTH_SHORT).show();
+            if (spinnerItem.isEmpty() || spinnerItem.equals("Select Items")) {
+                Toast.makeText(InvoiceActivity.this, "Please Select Valid Item.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
 
             String Quantity = quantityEditText.getText().toString().trim();
             if (Quantity.isEmpty()) {
                 quantityEditText.setError("Quantity is required.");
+                return;
+            }
+
+            int qty = Integer.parseInt(Quantity);
+            if (qty <= 0 ) {
+                quantityEditText.setError("Quantity should be greater than 0");
+                return;
+            }
+            if (qty > 1000) {
+                quantityEditText.setError("Quantity cannot be greater than 1000");
                 return;
             }
 
@@ -149,21 +124,26 @@ public class InvoiceActivity extends AppCompatActivity {
                 return;
             }
 
+            int rt = Integer.parseInt(Rate);
+            if (rt <= 0 ) {
+                rateEditText.setError("Rate should be greater than 0");
+                return;
+            }
+            if (rt > 10000) {
+                rateEditText.setError("Rate cannot be greater than 10000");
+                return;
+            }
+
             int quantity = Integer.parseInt(quantityEditText.getText().toString());
             int rate = Integer.parseInt(rateEditText.getText().toString());
             String Price = String.valueOf(quantity * rate);
 
-            // Create a new invoice item
             InvoiceItem invoiceItem = new InvoiceItem(clientName, spinnerItem, Quantity, Rate, Price);
 
-
-            // Add the item to the list
             invoiceItems.add(invoiceItem);
 
-            // Update the ListView
             itemAdapter.notifyDataSetChanged();
 
-            // Clear input fields
             quantityEditText.setText("");
             rateEditText.setText("");
             spinner_item.requestFocus();
@@ -218,7 +198,6 @@ public class InvoiceActivity extends AppCompatActivity {
         File file = new File(pdfPath, fileName);
         OutputStream outputStream = new FileOutputStream(file);
 
-
         PdfWriter writer = new PdfWriter(file);
         PdfDocument pdfdocument = new PdfDocument(templateReader,writer);
         Document document1 = new Document(pdfdocument);
@@ -239,9 +218,7 @@ public class InvoiceActivity extends AppCompatActivity {
         document1.add(in);
         document1.add(date);
         document1.add(labelParagraph);
-        document1.add(new Paragraph("\n")); // Blank space
 
-        // Add table header
         Table table = new Table(new float[]{1, 3, 2, 2, 2}).setHorizontalAlignment(HorizontalAlignment.CENTER);
         Color headerBackgroundColor = new DeviceRgb(0, 0, 255);
         table.addHeaderCell(new Cell().add(new Paragraph("Sl.No.").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
