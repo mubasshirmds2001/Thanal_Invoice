@@ -10,7 +10,7 @@ import android.widget.Button;
 
 public class Home_Activity extends AppCompatActivity {
     Button billbtn;
-    Button viewbtn;
+    Button addbtn;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -18,9 +18,8 @@ public class Home_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        billbtn = (Button) findViewById(R.id.Billbtn);
-
-
+        billbtn = findViewById(R.id.Billbtn);
+        addbtn = findViewById(R.id.Btnadd);
         billbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -28,9 +27,20 @@ public class Home_Activity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        addbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Home_Activity.this, AddItemActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         finish(); // Finish the current activity
     }
 }

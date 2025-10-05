@@ -1,140 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".InvoiceActivity"
     android:orientation="vertical"
     android:scrollbars="vertical"
+    android:background="@color/light_gray_page"
+    android:padding="16dp"
     android:fadeScrollbars="true">
-
-    <TextView
-        android:id="@+id/TextView"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        android:text="NEW BILL"
-        android:paddingTop="10dp"
-        android:textAlignment="center"
-        android:background="@drawable/textview_background"
-        android:layout_marginTop="40dp"
-        android:layout_gravity="center"
-        android:textColor="@color/colorAccent"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        tools:ignore="HardcodedText" />
-
-    <!-- Header -->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="20dp"
-        android:padding="10dp">
+        android:orientation="vertical">
 
+        <!-- Header -->
+        <TextView
+            android:id="@+id/tv_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NEW BILL"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/thanal_blue"
+            android:padding="12dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:textAlignment="center"/>
+
+        <!-- Client Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColorHint="#000000">
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/white_card">
 
             <EditText
                 android:id="@+id/clientEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/edittext"
                 android:hint="Client Name"
-                android:importantForAutofill="no"
                 android:inputType="text"
-                android:labelFor="@+id/clientEditText"
-                tools:ignore="Autofill,HardcodedText,LabelFor,SpeakableTextPresentCheck,VisualLintTextFieldSize" />
-
+                android:padding="12dp"
+                android:textColor="@color/dark_slate_gray"
+                tools:ignore="TouchTargetSizeCheck" />
         </com.google.android.material.textfield.TextInputLayout>
-
-
-    </LinearLayout>
 
     <!-- Add Item Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:orientation="horizontal"
-        android:padding="10dp">
-
-        <Spinner
-            android:id="@+id/spinner_item"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/edittext"
-            android:dropDownHeight="300dp"
-            android:minWidth="10dp"
-            android:spinnerMode="dropdown"
-            android:tooltipText="Items List"
-            tools:ignore="DuplicateIds,SpeakableTextPresentCheck"
-            tools:targetApi="o" />
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="center"
-        android:padding="10dp"
-        android:baselineAligned="false">
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textColorHint="#000000">
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-            <EditText
-                android:id="@+id/quantityEditText"
-                android:layout_width="170dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+            <Spinner
+                android:id="@+id/spinner_item"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="50dp"
                 android:background="@drawable/edittext"
-                android:hint="Quantity"
-                android:inputType="number"
-                tools:ignore="HardcodedText,RtlHardcoded,SpeakableTextPresentCheck"
-                android:importantForAutofill="no" />
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:spinnerMode="dropdown"/>
+        </LinearLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+        <!-- Quantity & Rate -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            android:weightSum="2"
+            android:gravity="center_vertical">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:textColorHint="#000000">
-
-            <EditText
-                android:id="@+id/rateEditText"
-                android:layout_width="170dp"
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:background="@drawable/edittext"
-                android:hint="Rate"
-                android:inputType="number"
-                tools:ignore="HardcodedText,RtlHardcoded,SpeakableTextPresentCheck"
-                android:importantForAutofill="no" />
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <EditText
+                    android:id="@+id/quantityEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Quantity"
+                    android:inputType="number"
+                    android:padding="12dp"
+                    android:textColor="@color/dark_slate_gray"
+                    tools:ignore="TouchTargetSizeCheck" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    </LinearLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp">
+
+                <EditText
+                    android:id="@+id/rateEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Rate"
+                    android:inputType="number"
+                    android:padding="12dp"
+                    android:textColor="@color/dark_slate_gray"
+                    tools:ignore="TouchTargetSizeCheck" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
-        >
+        android:layout_marginBottom="16dp"
+        android:gravity="center_horizontal"
+        android:weightSum="2">
 
         <Button
             android:id="@+id/addItemButton"
             android:layout_width="150dp"
             android:layout_marginRight="10dp"
+            style="@style/MyButton"
             android:layout_height="match_parent"
             android:background="@drawable/button"
             android:text="Add Item"
@@ -144,6 +132,7 @@
             android:id="@+id/clearItemButton"
             android:layout_width="150dp"
             android:layout_marginLeft="10dp"
+            style="@style/MyButton"
             android:layout_height="match_parent"
             android:background="@drawable/button"
             android:text="Clear Items"
@@ -152,38 +141,36 @@
     </LinearLayout>
 
 
-    <!-- Invoice Items -->
-    <ListView
-        android:id="@+id/itemListView"
-        android:layout_width="match_parent"
-        android:layout_marginTop="10dp"
-        android:padding="10dp"
-        android:layout_height="230dp"
-        android:layout_weight="0"
-        tools:ignore="InefficientWeight" />
+        <!-- Invoice Items List -->
+        <ListView
+            android:id="@+id/itemListView"
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            android:background="@color/white_card"
+            android:divider="@color/light_gray_page"
+            android:dividerHeight="8dp"
+            android:padding="8dp"
+            android:layout_marginBottom="16dp"/>
 
-    <!-- Total Amount -->
-    <TextView
-        android:id="@+id/totalAmountTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Total Amount: Rs 0.00"
-        android:layout_gravity="center"
-        android:textColor="@color/Blue"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        tools:ignore="HardcodedText" />
+        <!-- Total Amount -->
+        <TextView
+            android:id="@+id/totalAmountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Amount: Rs 0.00"
+            android:textColor="@color/thanal_blue"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"/>
 
-    <!-- Save PDF Button -->
-    <Button
-        android:id="@+id/saveListButton"
-        android:layout_width="150dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/button"
-        android:text="Save"
-        tools:ignore="HardcodedText" />
-
-</LinearLayout>
+        <!-- Save PDF Button -->
+        <Button
+            android:id="@+id/saveListButton"
+            style="@style/MyButton"
+            android:text="Save"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
+</ScrollView>

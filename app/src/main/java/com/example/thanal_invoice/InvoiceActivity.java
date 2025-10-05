@@ -1,10 +1,12 @@
 package com.example.thanal_invoice;
 
+import static androidx.core.content.ContextCompat.startActivity;
 import static com.itextpdf.layout.property.TextAlignment.CENTER;
 import static com.itextpdf.layout.property.TextAlignment.RIGHT;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -16,7 +18,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -38,6 +42,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class InvoiceActivity extends AppCompatActivity {
 
@@ -76,18 +81,33 @@ public class InvoiceActivity extends AppCompatActivity {
         itemListView = findViewById(R.id.itemListView);
         TextView priceTextView = findViewById(R.id.priceTextView);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.item_list, android.R.layout.simple_spinner_dropdown_item);
+        // load saved items from SharedPreferences (ItemStorage helper)
+        List<String> items = ItemStorage.loadItems(this);
+
+// add a "Select Items" option at the top
+        items.add(0, "Select Items");
+
+// create spinner adapter
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                items
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+// set adapter to spinner
         spinner_item.setAdapter(adapter);
-        String defValue = "Select Items";
-        int position = adapter.getPosition(defValue);  // get position of value
-        spinner_item.setSelection(position);  // set selected item by position
+
+// default selection: "Select Items"
+        spinner_item.setSelection(0);
+        // set selected item by position
 
         invoiceItems = new ArrayList<>();
         itemAdapter = new InvoiceItemAdapter(this, invoiceItems);
         itemListView.setAdapter(itemAdapter);
 
         addItemButton.setOnClickListener(v -> {
-            // Validate client name
+
             String clientName = clientEditText.getText().toString().trim();
             if (clientName.isEmpty()) {
                 clientEditText.setError("Client name is required.");
@@ -194,18 +214,28 @@ public class InvoiceActivity extends AppCompatActivity {
         String cnm = clientEditText.getText().toString();
         String fileName = "Invoice_" + cnm + ".pdf";
 
-        String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        File file = new File(pdfPath, fileName);
+        // Create "Invoices" folder inside Downloads
+        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File invoicesDir = new File(downloadsDir, "Invoices");
+
+// create folder if it doesn't exist
+        if (!invoicesDir.exists()) {
+            invoicesDir.mkdirs();
+        }
+
+// create PDF file inside "Invoices" folder
+        File file = new File(invoicesDir, fileName);
         OutputStream outputStream = new FileOutputStream(file);
 
+
         PdfWriter writer = new PdfWriter(file);
-        PdfDocument pdfdocument = new PdfDocument(templateReader,writer);
+        PdfDocument pdfdocument = new PdfDocument(templateReader, writer);
         Document document1 = new Document(pdfdocument);
 
-        Paragraph in = new Paragraph("Invoice").setBold().setFontSize(32).setFontColor(new DeviceRgb(255,0,0)).setTextAlignment(CENTER).setMarginTop(90).setUnderline();
+        Paragraph in = new Paragraph("Invoice").setBold().setFontSize(26).setFontColor(new DeviceRgb(0, 122, 204)).setTextAlignment(CENTER).setMarginTop(90).setUnderline();
         String clientName = clientEditText.getText().toString();
         Paragraph labelParagraph = new Paragraph("Client Name: "+clientName)
-                .setBold().setFontSize(18).setMarginTop(-10).setFontColor(new DeviceRgb(139, 0, 0));
+                .setBold().setFontSize(16).setFontColor(new DeviceRgb(0, 122, 204));
 
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -213,21 +243,23 @@ public class InvoiceActivity extends AppCompatActivity {
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         String formattedDate = String.format("%02d-%02d-%04d", day, month + 1, year);
-        Paragraph date = new Paragraph("Date:"+formattedDate).setBold().setFontSize(16).setFontColor(new DeviceRgb(128,0,128)).setTextAlignment(RIGHT).setMarginTop(-20);
+        Paragraph date = new Paragraph("Date:"+formattedDate).setBold().setFontSize(16).setFontColor(new DeviceRgb(128,0,128)).setTextAlignment(RIGHT).setMarginTop(-30);
 
         document1.add(in);
-        document1.add(date);
         document1.add(labelParagraph);
+        document1.add(date);
+
 
         Table table = new Table(new float[]{1, 3, 2, 2, 2}).setHorizontalAlignment(HorizontalAlignment.CENTER);
-        Color headerBackgroundColor = new DeviceRgb(0, 0, 255);
+        table.setMarginTop(1f);
+        Color headerBackgroundColor = new DeviceRgb(0, 122, 204);
         table.addHeaderCell(new Cell().add(new Paragraph("Sl.No.").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
         table.addHeaderCell(new Cell().add(new Paragraph("Item Name").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
         table.addHeaderCell(new Cell().add(new Paragraph("Quantity").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
         table.addHeaderCell(new Cell().add(new Paragraph("Rate").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
         table.addHeaderCell(new Cell().add(new Paragraph("Total Amount").setFontColor(headerBackgroundColor).setTextAlignment(CENTER)));
 
-        double grandTotal = 0.0;
+        double grandTotal = 0.00;
         // Add items to table
         int slNo = 1;
         for (InvoiceItem item : invoiceItems) {
@@ -242,28 +274,52 @@ public class InvoiceActivity extends AppCompatActivity {
         document1.add(table);
 
         Paragraph grandTotalParagraph = new Paragraph("Grand Total:  " + grandTotal)
-                .setBold().setFontSize(16).setMarginLeft(340).setFontColor(new DeviceRgb(255,0,0))
+                .setBold().setFontSize(16).setMarginLeft(340).setFontColor(new DeviceRgb(51, 51, 51))
                 .setTextAlignment(TextAlignment.JUSTIFIED)
-                .setMarginTop(20); // Adjust as needed
+                .setMarginTop(10); // Adjust as needed
         document1.add(grandTotalParagraph);
 
         document1.close();
         outputStream.close();
 
-        Toast.makeText(this, "PDF generated successfully", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, Home_Activity.class);
-        startActivity(intent);
+        // ✅ Show dialog with Share option
+        new AlertDialog.Builder(this)
+                .setTitle("PDF Generated")
+                .setMessage("Invoice PDF has been saved in Downloads.")
+                .setPositiveButton("Share", (dialog, which) -> {
+                    sharePDF(file); // call share method
+                })
+                .setNegativeButton("Close", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .show();
     }
 
-    private Cell createCell(String content, float width, float height) {
+    private void sharePDF(File file) {
+        Uri uri = FileProvider.getUriForFile(
+                this,
+                getApplicationContext().getPackageName() + ".provider", // same authority as in manifest
+                file);
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("application/pdf");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        startActivity(Intent.createChooser(shareIntent, "Share PDF via"));
+    }
+
+
+private Cell createCell(String content, float width, float height) {
         return new Cell()
                 .add(new Paragraph(content)
-                        .setMarginTop(10).setFontColor(new DeviceRgb(255, 0, 0))
+                        .setMarginTop(10).setFontColor(new DeviceRgb(128,0,128))
                         .setHeight(height)
                         .setWidth(width)
                         .setTextAlignment(CENTER));
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void onBackPressed() {
         // Go to the HomeActivity

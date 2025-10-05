@@ -13,4 +13,19 @@
     <color name="colorPrimaryDark">#FFFFFF</color>
     <color name="colorAccent">#FFFFFF</color>
     <color name="textInputLayout">#96ffffff</color>
+
+    <!-- Primary/Accent -->
+    <color name="thanal_blue">#007ACC</color>
+
+    <!-- Background -->
+    <color name="light_gray_page">#F8F8F8</color>
+
+    <!-- Surface/Card -->
+    <color name="white_card">#FFFFFF</color>
+
+    <!-- Global Text -->
+    <color name="dark_slate_gray">#333333</color>
+
+    <!-- Button Text -->
+    <color name="white_button_text">#FFFFFF</color>
 </resources>

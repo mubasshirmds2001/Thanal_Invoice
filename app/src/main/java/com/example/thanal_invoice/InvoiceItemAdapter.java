@@ -40,6 +40,7 @@ public class InvoiceItemAdapter extends ArrayAdapter<InvoiceItem> {
         rateTextView.setText(String.valueOf(item.getRate()));
         priceTextView.setText(String.format("%.2f", item.getPrice()));
 
+
         return convertView;
     }
 }
